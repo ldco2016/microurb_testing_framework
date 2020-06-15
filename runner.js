@@ -8,7 +8,25 @@ class Runner {
 
   async runTests() {
     for (let file of this.testFiles) {
-      require(file.name);
+      const beforeEaches = [];
+      global.beforeEach = (fn) => {
+        beforeEaches.push(fn);
+      };
+      global.it = (desc, fn) => {
+        beforeEaches.forEach((func) => func());
+        try {
+          fn();
+          console.log(`OK - ${desc}`);
+        } catch (error) {
+          console.log(`X - ${desc}`);
+          console.log("\t", error.message);
+        }
+      };
+      try {
+        require(file.name);
+      } catch (error) {
+        console.log(error);
+      }
     }
   }
 
