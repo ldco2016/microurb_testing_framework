@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+const chalk = require("chalk");
 
 class Runner {
   constructor() {
@@ -8,6 +9,7 @@ class Runner {
 
   async runTests() {
     for (let file of this.testFiles) {
+      console.log(chalk.gray(`--- ${file.shortName}`));
       const beforeEaches = [];
       global.beforeEach = (fn) => {
         beforeEaches.push(fn);
@@ -16,16 +18,16 @@ class Runner {
         beforeEaches.forEach((func) => func());
         try {
           fn();
-          console.log(`OK - ${desc}`);
+          console.log(chalk.green(`OK - ${desc}`));
         } catch (error) {
-          console.log(`X - ${desc}`);
-          console.log("\t", error.message);
+          console.log(chalk.red(`X - ${desc}`));
+          console.log(chalk.red("\t", error.message));
         }
       };
       try {
         require(file.name);
       } catch (error) {
-        console.log(error);
+        console.log(chalk.red(error));
       }
     }
   }
@@ -38,7 +40,7 @@ class Runner {
       const stats = await fs.promises.lstat(filepath);
 
       if (stats.isFile() && file.includes(".test.js")) {
-        this.testFiles.push({ name: filepath });
+        this.testFiles.push({ name: filepath, shortName: file });
       } else if (stats.isDirectory()) {
         const childFiles = await fs.promises.readdir(filepath);
 
